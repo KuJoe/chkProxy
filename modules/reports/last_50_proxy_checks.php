@@ -29,7 +29,7 @@ $reportdata["headertext"] = "";
 # Report Table of Data Column Headings - should be an array of values
 $reportdata["tableheadings"] = array("IP Address","Score","Timestamp","Action");
 
-$query = "SELECT * FROM mod_chkproxy ORDER BY chkid DESC";
+$query = "SELECT * FROM mod_chkproxy ORDER BY chkid DESC LIMIT 50";
 	 
 $result = mysql_query($query) or die(mysql_error());
 $num_rows = mysql_num_rows($result);

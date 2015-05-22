@@ -15,6 +15,7 @@ Proxy/VPN Detection Hook for WHMCS by KuJoe (JMD.cc)
 1.6 -	Fixed the ignore IP option.
 		Fixed e-mail alerts.
 		IPs can be ignored/unignored in the Last 50 Proxy Checks report.
+1.7 -	Limited Last 50 Proxy Checks report to 50. (Doh!)
 	
 //Requirements:
 You need to purchase Proxy Detection queries from MaxMind (the free minFraud queries will NOT work). http://www.maxmind.com/en/proxy
