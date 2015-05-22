@@ -47,3 +47,9 @@ A $max_score of 1.7-1.8 is recommended. I've found that many large data centers 
 https://minfraud.maxmind.com/app/ipauth_http?l=YOURLICENCEKEY&i=IPADDRESS
 
 If your website is behind a reverse proxy (i.e. CloudFlare) this hook might not work. You will need to configure your webserver to display the correct IP address of visitors.
+
+If you have a lot of duplicate entries in the mod_chkproxy table (fixed in version 1.5), run the following MySQL query to remove the duplicates:
+
+-- START QUERY
+DELETE n1 FROM mod_chkproxy n1, mod_chkproxy n2 WHERE n1.chkid < n2.chkid AND n1.ipaddr = n2.ipaddr;
+-- END QUERY
