@@ -16,14 +16,12 @@ function chkProxy($vars) {
 	
 	// Optional
 	$max_score = '1.7'; # Likelihood of proxy (0.5 = 15%, 1.0 = 30%, 2.0 = 60%, 3.0+ = 90%)
-	$error = 'You appear to be ordering from a proxy/VPN. Please logout of your proxy/VPN to continue ordering. If you believe that you received this error by mistake, please open a ticket with your IP address and we will investigate further. Thank you.';
-	$subject = "chkProxy Error";
-	$maxmsg = "You do not have any MaxMind queries left. The chkProxy script will no longer work and you will keep getting this e-mail until more queries are added.";
-	$nolicmsg = "You do not have a valid MaxMind license. Please verify your license key is correct or else the chkProxy script will not work and you will keep getting this e-mail.";
+	$error = '# You appear to be ordering from a proxy/VPN. Please logout of your proxy/VPN to continue ordering. If you believe that you received this error by mistake, please open a ticket with your IP address and we will investigate further. Thank you.';
+	$subject = "chkProxy Error";	
 	
 	// No need to edit anything below this.
 	$ipaddress = $_SERVER['REMOTE_ADDR'];
-	$result = select_query("mod_chkproxy","",array("ipaddr"=>$ipaddress,"ignore"=>"0"));
+	$result = select_query("mod_chkproxy","",array("ipaddr"=>$ipaddress));
 	if (mysql_num_rows($result) == 0) {
 		$query = "https://minfraud.maxmind.com/app/ipauth_http?l=" . $license_key . "&i=" . $ipaddress;
 		$query = file_get_contents($query);
@@ -36,8 +34,10 @@ function chkProxy($vars) {
 			}
 		} else {
 			if ($score == 'MAX_REQUESTS_REACHED') {
+				$maxmsg = "You do not have any MaxMind queries left (".$score."). The chkProxy script will no longer work and you will keep getting this e-mail until more queries are added.";
 				mail($email,$subject,$maxmsg);
-			} elseif ($score == 'LICENSE_REQUIRED') {			
+			} elseif ($score == 'LICENSE_REQUIRED') {	
+				$nolicmsg = "You do not have a valid MaxMind license (".$score."). Please verify your license key is correct or else the chkProxy script will not work and you will keep getting this e-mail.";			
 				mail($email,$subject,$nolicmsg);
 			} else {
 				$genmsg = "The return message received is new to us so please alert the chkProxy developer (http://jmd.cc) of this message received in the following link: https://minfraud.maxmind.com/app/ipauth_http?l=" . $license_key . "&i=" . $ipaddress;
@@ -46,10 +46,12 @@ function chkProxy($vars) {
 		}
 	} else {
 		$data = mysql_fetch_assoc($result);
-		$score = $data['proxyscore'];
-		if ($score >= $max_score) {
-			global $errormessage;
-			$errormessage .= $error;
+		if ($data['ignore'] == 0) {
+			$score = $data['proxyscore'];
+			if ($score >= $max_score) {
+				global $errormessage;
+				$errormessage .= $error;
+			}
 		}
 	}
 }

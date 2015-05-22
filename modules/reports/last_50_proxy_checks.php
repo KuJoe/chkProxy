@@ -11,6 +11,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 if(!defined("WHMCS")){ die("This file cannot be accessed directly"); }
 
+if ($_GET['ip']) {
+	if (filter_var($_GET['ip'], FILTER_VALIDATE_IP) AND is_numeric($_GET['i'])) {
+		update_query("mod_chkproxy",array("ignore"=>$_GET['i']),array("ipaddr"=>$_GET['ip']));
+	}
+}
+
 # The title of your report
 $reportdata["title"] = "Last 50 Proxy Checks";
 
@@ -21,7 +27,7 @@ $reportdata["description"] = "This is a list of the last 50 Maxmind Proxy Checks
 $reportdata["headertext"] = "";
 
 # Report Table of Data Column Headings - should be an array of values
-$reportdata["tableheadings"] = array("IP Address","Score","Timestamp");
+$reportdata["tableheadings"] = array("IP Address","Score","Timestamp","Action");
 
 $query = "SELECT * FROM mod_chkproxy ORDER BY chkid DESC";
 	 
@@ -31,7 +37,12 @@ while($row = mysql_fetch_array($result)){
 	$ipaddr = $row["ipaddr"];
 	$score = $row["proxyscore"];
 	$td = $row["dt"];
-	$reportdata["tablevalues"][] = array($ipaddr,$score,$td);
+	if ($row['ignore'] == '0') {
+		$ignore = '<form method="post" action="reports.php?report='.$report.'&ip='.$row["ipaddr"].'&i=1"><input type="submit" value="Ignore" /></form>';
+	} else {
+		$ignore = '<form method="post" action="reports.php?report='.$report.'&ip='.$row["ipaddr"].'&i=0"><input type="submit" value="Unignore" /></form>';
+	}
+	$reportdata["tablevalues"][] = array($ipaddr,$score,$td,$ignore);
 }
 
 # Report Footer Text - this gets displayed below the report table of data

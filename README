@@ -11,13 +11,16 @@ Proxy/VPN Detection Hook for WHMCS by KuJoe (JMD.cc)
 		Created a WHMCS report for the last 50 proxy check scores.
 1.5 -	Fixed script to only write to the database once per IP address.
 		Script generates e-mail alerts when the MaxMind lookup returns something other than a numeric score.
-		Added database field that allows ignoring IPs that fail VPN checks (will add a method to change this on the report, until then manual database updates are required).
+		Added database field that allows ignoring IPs that fail VPN checks.
+1.6 -	Fixed the ignore IP option.
+		Fixed e-mail alerts.
+		IPs can be ignored/unignored in the Last 50 Proxy Checks report.
 	
 //Requirements:
 You need to purchase Proxy Detection queries from MaxMind (the free minFraud queries will NOT work). http://www.maxmind.com/en/proxy
 
-//Installation:
-1) Set $license_key in chkProxy.php:
+//Installation/Upgrade:
+1) Set $license_key and $email in chkProxy.php.
 2) Create mod_chkproxy table in WHMCS database (query below).
 3) Upload the chkProxy.php file into your WHMCS's hooks directory (/includes/hooks/).
 4) Upload the last_50_proxy_checks.php file into your WHMCS's reports directory (/modules/reports/).
@@ -26,7 +29,7 @@ You need to purchase Proxy Detection queries from MaxMind (the free minFraud que
 -- START QUERY
 CREATE TABLE IF NOT EXISTS `mod_chkproxy` (
 	  `chkid` int(11) NOT NULL AUTO_INCREMENT,
-	  `ipaddr` varchar(255) NOT NULL,
+	  `ipaddr` varchar(40) NOT NULL,
 	  `proxyscore` varchar(4) NOT NULL,
 	  `ignore` int(1) NOT NULL DEFAULT '0',
 	  `dt` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
