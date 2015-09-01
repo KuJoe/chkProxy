@@ -13,12 +13,13 @@ if(!defined("WHMCS")){ die("This file cannot be accessed directly"); }
 
 if ($_GET['ip']) {
 	if (filter_var($_GET['ip'], FILTER_VALIDATE_IP) AND is_numeric($_GET['i'])) {
-		update_query("mod_chkproxy",array("ignore"=>$_GET['i']),array("ipaddr"=>$_GET['ip']));
+		update_query("mod_chkproxy_mm",array("ignore"=>$_GET['i']),array("ipaddr"=>$_GET['ip']));
+		update_query("mod_chkproxy_gii",array("ignore"=>$_GET['i']),array("ipaddr"=>$_GET['ip']));
 	}
 }
 
 # The title of your report
-$reportdata["title"] = "Last 50 Proxy Checks";
+$reportdata["title"] = "Last 50 Maxmind Proxy Checks";
 
 # The description of your report
 $reportdata["description"] = "This is a list of the last 50 Maxmind Proxy Checks by the chkProxy hook.";
@@ -29,7 +30,7 @@ $reportdata["headertext"] = "";
 # Report Table of Data Column Headings - should be an array of values
 $reportdata["tableheadings"] = array("IP Address","Score","Timestamp","Action");
 
-$query = "SELECT * FROM mod_chkproxy ORDER BY chkid DESC LIMIT 50";
+$query = "SELECT * FROM mod_chkproxy_mm ORDER BY chkid DESC LIMIT 50";
 	 
 $result = mysql_query($query) or die(mysql_error());
 $num_rows = mysql_num_rows($result);

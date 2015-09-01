@@ -9,7 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **/
 
-function chkProxy($vars) {
+function chkProxyMM($vars) {
 	// Set me!
 	$license_key = 'MAXMIND_LICENSE_KEY'; # Set this to your MaxMind License Key (your account must have Proxy Detection queries).
 	$email = 'you@example.com'; # This is the e-mail alerts will be sent to.
@@ -21,13 +21,13 @@ function chkProxy($vars) {
 	
 	// No need to edit anything below this.
 	$ipaddress = $_SERVER['REMOTE_ADDR'];
-	$result = select_query("mod_chkproxy","",array("ipaddr"=>$ipaddress));
+	$result = select_query("mod_chkproxy_mm","",array("ipaddr"=>$ipaddress));
 	if (mysql_num_rows($result) == 0) {
 		$query = "https://minfraud.maxmind.com/app/ipauth_http?l=" . $license_key . "&i=" . $ipaddress;
 		$query = file_get_contents($query);
 		$score = substr($query, strpos($query, "=") + 1);
 		if (is_numeric($score)) {
-			insert_query("mod_chkproxy", array("ipaddr"=>$ipaddress, "proxyscore"=>$score));
+			insert_query("mod_chkproxy_mm", array("ipaddr"=>$ipaddress, "proxyscore"=>$score));
 			if ($score >= $max_score) {
 				global $errormessage;
 				$errormessage .= $error;
@@ -56,5 +56,5 @@ function chkProxy($vars) {
 	}
 }
 
-add_hook("ShoppingCartValidateCheckout",1,"chkProxy");
+add_hook("ShoppingCartValidateCheckout",1,"chkProxyMM");
 ?>

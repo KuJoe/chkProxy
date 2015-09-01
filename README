@@ -16,19 +16,65 @@ Proxy/VPN Detection Hook for WHMCS by KuJoe (JMD.cc)
 		Fixed e-mail alerts.
 		IPs can be ignored/unignored in the Last 50 Proxy Checks report.
 1.7 -	Limited Last 50 Proxy Checks report to 50. (Doh!)
+1.8 -	Added 2nd hook and report for GetIPIntel.net (free Maxmind alternative)
 	
 //Requirements:
-You need to purchase Proxy Detection queries from MaxMind (the free minFraud queries will NOT work). http://www.maxmind.com/en/proxy
+You need to purchase Proxy Detection queries from MaxMind for the Maxmind hook (the free minFraud queries will NOT work). http://www.maxmind.com/en/proxy
 
-//Installation/Upgrade:
-1) Set $license_key and $email in chkProxy.php.
-2) Create mod_chkproxy table in WHMCS database (query below).
-3) Upload the chkProxy.php file into your WHMCS's hooks directory (/includes/hooks/).
-4) Upload the last_50_proxy_checks.php file into your WHMCS's reports directory (/modules/reports/).
-5) Run this query to create the database table (run this command in phpMyAdmin, Adminer, SQLBuddy, command line, or your MySQL editor of choice):
-
+//Installation:
+1) Set $license_key in chkProxy_maxmind.php file if you wish to use Maxmind's database to check IPs.
+2) Set $email in both chkProxy files.
+3) Upload the chkProxy files into your WHMCS's hooks directory (/includes/hooks/).
+4) Upload the last_50_proxy_checks files into your WHMCS's reports directory (/modules/reports/).
+5) Run these query to create the database tables (run this command in phpMyAdmin, Adminer, SQLBuddy, command line, or your MySQL editor of choice):
 -- START QUERY
-CREATE TABLE IF NOT EXISTS `mod_chkproxy` (
+CREATE TABLE IF NOT EXISTS `mod_chkproxy_mm` (
+	  `chkid` int(11) NOT NULL AUTO_INCREMENT,
+	  `ipaddr` varchar(40) NOT NULL,
+	  `proxyscore` varchar(4) NOT NULL,
+	  `ignore` int(1) NOT NULL DEFAULT '0',
+	  `dt` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	  PRIMARY KEY (`chkid`)
+);
+CREATE TABLE IF NOT EXISTS `mod_chkproxy_gii` (
+	  `chkid` int(11) NOT NULL AUTO_INCREMENT,
+	  `ipaddr` varchar(40) NOT NULL,
+	  `proxyscore` varchar(4) NOT NULL,
+	  `ignore` int(1) NOT NULL DEFAULT '0',
+	  `dt` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	  PRIMARY KEY (`chkid`)
+);
+-- END QUERY
+
+//Upgrading:
+Upgrading from version 1.4 and older
+1) Run the following MySQL query:
+-- START QUERY
+DELETE n1 FROM mod_chkproxy n1, mod_chkproxy n2 WHERE n1.chkid < n2.chkid AND n1.ipaddr = n2.ipaddr;
+-- END QUERY
+
+Upgrading from version 1.7 and older
+1) Delete /includes/hooks/chkproxy.php from WHMCS.
+2) Delete /modules/reports/last_50_proxy_checks.php from WHMCS.
+3) Run the following MySQL query:
+-- START QUERY
+RENAME TABLE mod_chkproxy TO mod_chkproxy_mm;
+-- END QUERY
+4) Set $license_key in chkProxy_maxmind.php file if you wish to use Maxmind's database to check IPs.
+5) Set $email in both chkProxy files.
+6) Upload the chkProxy files into your WHMCS's hooks directory (/includes/hooks/).
+7) Upload the last_50_proxy_checks files into your WHMCS's reports directory (/modules/reports/).
+8) Run these query to create the database tables (run this command in phpMyAdmin, Adminer, SQLBuddy, command line, or your MySQL editor of choice):
+-- START QUERY
+CREATE TABLE IF NOT EXISTS `mod_chkproxy_mm` (
+	  `chkid` int(11) NOT NULL AUTO_INCREMENT,
+	  `ipaddr` varchar(40) NOT NULL,
+	  `proxyscore` varchar(4) NOT NULL,
+	  `ignore` int(1) NOT NULL DEFAULT '0',
+	  `dt` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	  PRIMARY KEY (`chkid`)
+);
+CREATE TABLE IF NOT EXISTS `mod_chkproxy_gii` (
 	  `chkid` int(11) NOT NULL AUTO_INCREMENT,
 	  `ipaddr` varchar(40) NOT NULL,
 	  `proxyscore` varchar(4) NOT NULL,
@@ -43,13 +89,14 @@ A) Edit $max_score to fine tune detection (lower means will block more proxies b
 B) Edit $error to fit your needs and match your template. To test your error message without access to a proxy/VPN, just set the $max_score to 0.00 to force the message to trigger (no orders will be processed until this is changed back).
 
 //Additional Information:
+You can run both hooks (Maxmind and GetIPIntel) in tandem or you can pick one to run instead.
+
+MAXMIND - A paid service with highly accurate proxy/VPN database. Founded in 2002 and proven reliable. Fewer false positives but fails to identify some proxy/VPNs.
 A $max_score of 1.7-1.8 is recommended. I've found that many large data centers return a score of 1.8 and every US residential ISP that I've tested has been a 0.00 so you can adjust accordingly. If you want to find the score of a specific IP address use the following URL in your browser:
 https://minfraud.maxmind.com/app/ipauth_http?l=YOURLICENCEKEY&i=IPADDRESS
 
+GETIPINTEL - A free service with a fairly accurate proxy/VPN detection algorithm. Founded in 2014 and constantly improving. More false positives but identifies more proxy/VPNs than Maxmind.
+A $max_score of 0.95 is recommended to prevent false positives and as the service matures the recommended $max_score will be lowered. Set to 1 if you want to just block known bad IPs. More details about this project can be found at http://getipintel.net and if you want to find the score of a specific IP address use the following URL in your browser:
+http://check.getipintel.net/check.php?ip=IPADDRESS
+
 If your website is behind a reverse proxy (i.e. CloudFlare) this hook might not work. You will need to configure your webserver to display the correct IP address of visitors.
-
-If you have a lot of duplicate entries in the mod_chkproxy table (fixed in version 1.5), run the following MySQL query to remove the duplicates:
-
--- START QUERY
-DELETE n1 FROM mod_chkproxy n1, mod_chkproxy n2 WHERE n1.chkid < n2.chkid AND n1.ipaddr = n2.ipaddr;
--- END QUERY
