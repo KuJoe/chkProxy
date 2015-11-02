@@ -22,7 +22,7 @@ function chkProxyGII($vars) {
 	$ipaddress = $_SERVER['REMOTE_ADDR'];
 	$result = select_query("mod_chkproxy_gii","",array("ipaddr"=>$ipaddress));
 	if (mysql_num_rows($result) == 0) {
-		$query = "http://check.getipintel.net/check.php?ip=" . $ipaddress;
+		$query = "http://check.getipintel.net/check.php?ip=" . $ipaddress . "&contact=" . $email;
 		$score = file_get_contents($query);
 		if (is_numeric($score)) {
 			insert_query("mod_chkproxy_gii", array("ipaddr"=>$ipaddress, "proxyscore"=>$score));
@@ -33,7 +33,7 @@ function chkProxyGII($vars) {
 				}
 			}
 		} else {
-			$genmsg = "The return message received is new to us so please alert the chkProxy developer (http://jmd.cc) of this message received in the following link: http://check.getipintel.net/check.php?ip=" . $ipaddress;
+			$genmsg = "The return message received is new to us so please alert the chkProxy developer (http://jmd.cc) of this message received in the following link: http://check.getipintel.net/check.php?ip=" . $ipaddress . "&contact=" . $email;
 			mail($email,$subject,$genmsg);
 		}
 	} else {

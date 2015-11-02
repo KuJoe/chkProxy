@@ -17,6 +17,7 @@ Proxy/VPN Detection Hook for WHMCS by KuJoe (JMD.cc)
 		IPs can be ignored/unignored in the Last 50 Proxy Checks report.
 1.7 -	Limited Last 50 Proxy Checks report to 50. (Doh!)
 1.8 -	Added 2nd hook and report for GetIPIntel.net (free Maxmind alternative)
+1.9 -	Updated hook for GetIPIntel.net to meet future requirement (contact info required to help the developer troubleshoot issues)
 	
 //Requirements:
 You need to purchase Proxy Detection queries from MaxMind for the Maxmind hook (the free minFraud queries will NOT work). http://www.maxmind.com/en/proxy
@@ -97,6 +98,6 @@ https://minfraud.maxmind.com/app/ipauth_http?l=YOURLICENCEKEY&i=IPADDRESS
 
 GETIPINTEL - A free service with a fairly accurate proxy/VPN detection algorithm. Founded in 2014 and constantly improving. More false positives but identifies more proxy/VPNs than Maxmind.
 A $max_score of 0.95 is recommended to prevent false positives and as the service matures the recommended $max_score will be lowered. Set to 1 if you want to just block known bad IPs. More details about this project can be found at http://getipintel.net and if you want to find the score of a specific IP address use the following URL in your browser:
-http://check.getipintel.net/check.php?ip=IPADDRESS
+http://check.getipintel.net/check.php?ip=IPADDRESS&contact=EMAIL
 
 If your website is behind a reverse proxy (i.e. CloudFlare) this hook might not work. You will need to configure your webserver to display the correct IP address of visitors.
